@@ -41,6 +41,8 @@ border:3px solid #d9aa77;touch-action:manipulation}
 @keyframes float{to{transform:translateY(-55px) scale(1.25);opacity:0}}
 .flash{position:absolute;inset:0;background:rgba(255,70,70,.17);pointer-events:none;animation:flash .25s}
 @keyframes flash{from{opacity:1}to{opacity:0}}
+#gameUmeko{position:absolute;right:4px;bottom:4px;z-index:8;width:118px;pointer-events:none}#gameUmeko img{width:100%;max-height:145px;object-fit:contain;filter:drop-shadow(0 4px 3px rgba(0,0,0,.18))}#gameUmeko .bubble{position:absolute;right:72px;bottom:105px;background:#fff;border:2px solid #8a512e;border-radius:14px;padding:5px 8px;font-size:12px;font-weight:1000;white-space:nowrap}
+#miniBoss{position:absolute;left:7px;bottom:7px;z-index:35;display:none;align-items:center;gap:4px;background:rgba(255,255,255,.95);border:3px solid #e84545;border-radius:18px;padding:4px 7px 4px 3px;box-shadow:0 4px 0 rgba(125,45,32,.22);cursor:pointer;user-select:none}#miniBoss img{width:64px;height:64px;object-fit:contain}.miniBossInfo{width:92px;font-size:11px;font-weight:1000;color:#9e2828}.miniBossInfo b{font-size:15px}.miniHp{height:11px;background:#eee;border:1px solid #6b3824;border-radius:99px;overflow:hidden;margin:2px 0}#miniHpFill{height:100%;width:100%;background:#e84a4a;transition:width .08s}#miniHpText{font-size:11px}
 #rush{position:absolute;left:50%;top:15%;transform:translateX(-50%) rotate(-3deg);z-index:30;background:#e84242;color:#fff;border:4px solid #fff;padding:8px 14px;border-radius:13px;font-size:21px;font-weight:1000;display:none;white-space:nowrap;box-shadow:0 5px 0 #a62323}
 #boss{position:absolute;inset:0;z-index:50;background:rgba(255,245,226,.86);display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:12px}
 #boss img{width:min(74%,330px);max-height:360px;object-fit:contain;filter:drop-shadow(0 7px 5px rgba(0,0,0,.2))}
@@ -86,13 +88,13 @@ border:3px solid #d9aa77;touch-action:manipulation}
   <div id="arena">
     <div class="shopTitle">🥯 UMEKO BAGEL</div>
     <div class="shelf s1"></div><div class="shelf s2"></div>
+    <div id="gameUmeko"><img src="./umeko_run.PNG" alt=""><div class="bubble">取れ取れー‼️🥯</div></div>
+    <div id="miniBoss"><img src="./boss_bagel.PNG" alt="爆買いボス"><div class="miniBossInfo"><b>BOSS</b><div class="miniHp"><div id="miniHpFill"></div></div><span id="miniHpText">12 / 12</span></div></div>
     <div id="rush">🔥 売り切れ直前!! 🔥</div>
     <div id="boss">
       <h2>爆買いBOSS襲来‼️</h2>
       <img src="./boss_bagel.PNG" alt="大量のベーグルを抱えたボス">
-      <p>連打して追い払え！</p>
-      <div class="bossbar"><div id="bossHp"></div></div>
-      <button id="bossHit">しばく‼️</button>
+      <p id="bossMessage">あと12発！連打して追い払え！</p><div class="bossbar"><div id="bossHp"></div></div><div id="bossHpLabel" style="font-weight:1000">BOSS HP 12 / 12</div><button id="bossHit">しばく‼️</button>
     </div>
     <div id="toast" aria-live="polite"></div>
   </div>
@@ -160,7 +162,7 @@ function setSpawnRate(ms){clearInterval(spawnTimer);spawnTimer=setInterval(spawn
 function toast(s){const x=$("#toast");x.textContent=s;x.style.opacity=1;setTimeout(()=>x.style.opacity=0,1200)}
 function start(){
  score=0;count=0;time=30;got={plain:0,cheese:0,choco:0,blueberry:0,rare:0};running=true;bossActive=false;
- update();screen("game");$("#rush").style.display="none";$("#boss").style.display="none";
+ update();screen("game");$("#rush").style.display="none";$("#boss").style.display="none";$("#miniBoss").style.display="none";
  arena.querySelectorAll(".bagel,.float,.flash").forEach(x=>x.remove());
  setSpawnRate(520); for(let i=0;i<3;i++)setTimeout(spawn,i*120);
  clock=setInterval(()=>{
@@ -172,25 +174,17 @@ function start(){
  bossTimer=setTimeout(showBoss,11500);
 }
 function showBoss(){
- if(!running)return;bossActive=true;bossHP=12;$("#bossHp").style.width="100%";$("#boss").style.display="flex";
- arena.querySelectorAll(".bagel").forEach(x=>x.remove());
- let limit=5000;
- const escape=setTimeout(()=>{
-   if(!bossActive)return;
-   bossActive=false;$("#boss").style.display="none";
-   const steal=Math.min(count,5), penalty=Math.min(score,steal*30);
-   count-=steal;score-=penalty;update();
-   const f=document.createElement("div");f.className="flash";arena.appendChild(f);setTimeout(()=>f.remove(),300);
-   toast("BOSSに "+steal+"個 持ってかれたー‼️");
- },limit);
- $("#bossHit").onclick=()=>{
-   if(!bossActive)return;bossHP--;$("#bossHp").style.width=(bossHP/12*100)+"%";
-   if(bossHP<=0){clearTimeout(escape);bossActive=false;$("#boss").style.display="none";score+=80;update();toast("撃退‼️ +80点🤣");}
- };
+ if(!running)return;bossActive=true;bossHP=12;
+ $("#bossHp").style.width="100%";$("#miniHpFill").style.width="100%";$("#bossHpLabel").textContent="BOSS HP 12 / 12";$("#miniHpText").textContent="12 / 12";$("#bossMessage").textContent="あと12発！連打して追い払え！";
+ $("#boss").style.display="flex";$("#miniBoss").style.display="flex";arena.querySelectorAll(".bagel").forEach(x=>x.remove());
+ let defeated=false;
+ const hitBoss=()=>{if(!bossActive)return;bossHP--;const pct=Math.max(0,bossHP/12*100);$("#bossHp").style.width=pct+"%";$("#miniHpFill").style.width=pct+"%";$("#bossHpLabel").textContent="BOSS HP "+bossHP+" / 12";$("#miniHpText").textContent=bossHP+" / 12";$("#bossMessage").textContent=bossHP>0?"あと"+bossHP+"発‼️":"撃退ーー‼️";if(bossHP<=0){defeated=true;bossActive=false;$("#boss").style.display="none";$("#miniBoss").style.display="none";score+=80;update();toast("💥 BOSS撃退成功‼️ +80点");}};
+ $("#bossHit").onclick=hitBoss;$("#miniBoss").onclick=hitBoss;
+ setTimeout(()=>{if(!bossActive||defeated)return;bossActive=false;$("#boss").style.display="none";$("#miniBoss").style.display="none";const steal=Math.min(count,5),penalty=Math.min(score,steal*30);count-=steal;score-=penalty;update();toast("😱 BOSS逃走！ "+steal+"個 持ってかれたー‼️");},6500);
 }
 function finish(){
  if(!running)return;running=false;clearInterval(clock);clearInterval(spawnTimer);clearTimeout(bossTimer);
- bossActive=false;$("#boss").style.display="none";arena.querySelectorAll(".bagel").forEach(x=>x.remove());
+ bossActive=false;$("#boss").style.display="none";$("#miniBoss").style.display="none";arena.querySelectorAll(".bagel").forEach(x=>x.remove());
  let img,msg;
  if(score<100){img="./umeko_soldout.PNG";msg="また売り切れやないかい。";}
  else if(score<300){img="./umeko_cry.PNG";msg="買えたけど……これだけ？";}
