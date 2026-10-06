@@ -21,7 +21,7 @@ button{font:inherit}
 .hero img{width:min(66vw,290px);max-height:300px;object-fit:contain;display:block;margin:4px auto}
 .lead{font-weight:800;line-height:1.65;margin:8px auto 14px}
 .primary{border:0;border-radius:999px;background:linear-gradient(180deg,#ff8ca5,#ff5f82);color:#fff;font-weight:1000;font-size:20px;padding:14px 28px;min-width:210px;box-shadow:0 6px 0 #d94a68;cursor:pointer}
-.primary:active{transform:translateY(3px);box-shadow:0 3px 0 #d94a68}
+.primary:active{transform:translateY(3px);box-shadow:0 3px 0 #d94a68}.primary:disabled{opacity:.48;box-shadow:none;transform:none;cursor:not-allowed}
 .how{margin-top:15px;padding:12px;text-align:left;background:#fffaf4;border-radius:18px;font-size:13px;line-height:1.55}
 .how b{color:#a14d27}
 .hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px}
@@ -45,7 +45,7 @@ border:3px solid #d9aa77;touch-action:manipulation}
 #miniBoss{position:absolute;left:7px;bottom:7px;z-index:35;display:none;align-items:center;gap:4px;background:rgba(255,255,255,.95);border:3px solid #e84545;border-radius:18px;padding:4px 7px 4px 3px;box-shadow:0 4px 0 rgba(125,45,32,.22);cursor:pointer;user-select:none}#miniBoss img{width:64px;height:64px;object-fit:contain}.miniBossInfo{width:92px;font-size:11px;font-weight:1000;color:#9e2828}.miniBossInfo b{font-size:15px}.miniHp{height:11px;background:#eee;border:1px solid #6b3824;border-radius:99px;overflow:hidden;margin:2px 0}#miniHpFill{height:100%;width:100%;background:#e84a4a;transition:width .08s}#miniHpText{font-size:11px}
 #rush{position:absolute;left:50%;top:15%;transform:translateX(-50%) rotate(-3deg);z-index:30;background:#e84242;color:#fff;border:4px solid #fff;padding:8px 14px;border-radius:13px;font-size:21px;font-weight:1000;display:none;white-space:nowrap;box-shadow:0 5px 0 #a62323}
 #boss{position:absolute;inset:0;z-index:50;background:rgba(255,245,226,.86);display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:12px}
-#boss img{width:min(74%,330px);max-height:360px;object-fit:contain;filter:drop-shadow(0 7px 5px rgba(0,0,0,.2));cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-drag:none}#boss img.bonk{animation:bonk .12s ease-out}@keyframes bonk{50%{transform:scale(.88) rotate(-5deg)}}.bossDirect{font-weight:1000;font-size:18px;color:#b32929;margin-top:7px}
+#boss img{width:min(74%,330px);max-height:360px;object-fit:contain;filter:drop-shadow(0 7px 5px rgba(0,0,0,.2));cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-drag:none;transition:transform .11s ease,opacity .28s ease}#boss img.bonk{animation:bonk .12s ease-out}@keyframes bonk{50%{transform:scale(.88) rotate(-5deg)}}.bossDirect{font-weight:1000;font-size:18px;color:#b32929;margin-top:7px}#bossBye{display:none;font-weight:1000;font-size:27px;color:#b32929;background:#fff;border:3px solid #b32929;border-radius:18px;padding:8px 15px;margin:5px;animation:byePop .25s ease-out}@keyframes byePop{from{transform:scale(.5) rotate(-8deg)}to{transform:scale(1)}}
 #boss h2{margin:2px 0;font-size:28px;color:#b32929}
 #boss p{font-weight:900;margin:4px}
 .bossbar{width:85%;height:20px;background:#eee;border:2px solid #6b3824;border-radius:999px;overflow:hidden;margin:7px}
@@ -94,7 +94,7 @@ border:3px solid #d9aa77;touch-action:manipulation}
     <div id="boss">
       <h2>爆買いBOSS襲来‼️</h2>
       <img id="bossImg" src="./boss_bagel.PNG" alt="大量のベーグルを抱えたボス">
-      <p id="bossMessage">あと12発！連打して追い払え！</p><div class="bossbar"><div id="bossHp"></div></div><div id="bossHpLabel" style="font-weight:1000">BOSS HP 12 / 12</div><div class="bossDirect">👆 BOSSを直接しばけ‼️</div>
+      <p id="bossMessage">あと12発！連打して追い払え！</p><div class="bossbar"><div id="bossHp"></div></div><div id="bossHpLabel" style="font-weight:1000">BOSS HP 12 / 12</div><div class="bossDirect">👆 BOSSを直接しばけ‼️</div><div id="bossBye">さいなら〜〜👋</div>
     </div>
     <div id="toast" aria-live="polite"></div>
   </div>
@@ -107,7 +107,7 @@ border:3px solid #d9aa77;touch-action:manipulation}
     <div class="score"><span id="finalScore">0</span>点</div>
     <div id="finalMsg" class="msg"></div>
     <div id="breakdown" class="breakdown"></div>
-    <button id="retryBtn" class="primary">もう一回争う</button>
+    <button id="retryBtn" class="primary" disabled>もう一回争う</button>
     <p class="small">※ゲームです。ベーグルは実際には増えません。</p>
   </div>
 </section>
@@ -185,9 +185,9 @@ function start(){
 function showBoss(){
  if(!running)return;bossActive=true;bossHP=12;
  $("#bossHp").style.width="100%";$("#miniHpFill").style.width="100%";$("#bossHpLabel").textContent="BOSS HP 12 / 12";$("#miniHpText").textContent="12 / 12";$("#bossMessage").textContent="あと12発！連打して追い払え！";
- $("#boss").style.display="flex";$("#miniBoss").style.display="flex";arena.querySelectorAll(".bagel").forEach(x=>x.remove());
+ $("#boss").style.display="flex";$("#miniBoss").style.display="flex";$("#bossImg").style.transform="scale(1)";$("#bossImg").style.opacity="1";$("#bossBye").style.display="none";arena.querySelectorAll(".bagel").forEach(x=>x.remove());
  let defeated=false;
- const hitBoss=()=>{if(!bossActive)return;bossHP--;const pct=Math.max(0,bossHP/12*100);$("#bossHp").style.width=pct+"%";$("#miniHpFill").style.width=pct+"%";$("#bossHpLabel").textContent="BOSS HP "+bossHP+" / 12";$("#miniHpText").textContent=bossHP+" / 12";$("#bossMessage").textContent=bossHP>0?"あと"+bossHP+"発‼️":"撃退ーー‼️";if(bossHP<=0){defeated=true;bossActive=false;$("#boss").style.display="none";$("#miniBoss").style.display="none";score+=80;update();toast("💥 BOSS撃退成功‼️ +80点");}};
+ const hitBoss=()=>{if(!bossActive)return;bossHP--;const pct=Math.max(0,bossHP/12*100);const scale=Math.max(.16,bossHP/12);$("#bossHp").style.width=pct+"%";$("#miniHpFill").style.width=pct+"%";$("#bossHpLabel").textContent="BOSS HP "+bossHP+" / 12";$("#miniHpText").textContent=bossHP+" / 12";$("#bossMessage").textContent=bossHP>0?"あと"+bossHP+"発‼️":"撃退ーー‼️";$("#bossImg").style.transform="scale("+scale+")";if(bossHP<=0){defeated=true;bossActive=false;score+=80;update();$("#bossBye").style.display="block";$("#bossImg").style.opacity=".18";$("#miniBoss").style.display="none";toast("💥 BOSS撃退成功‼️ +80点");setTimeout(()=>{$("#boss").style.display="none";},700);}};
  const bossImg=$("#bossImg");
  bossImg.onpointerdown=(e)=>{e.preventDefault();bossImg.classList.remove("bonk");void bossImg.offsetWidth;bossImg.classList.add("bonk");hitBoss();};
  $("#miniBoss").onpointerdown=(e)=>{e.preventDefault();hitBoss();};
@@ -205,9 +205,13 @@ function finish(){
  $("#resultImg").src=img;$("#finalScore").textContent=score;$("#finalMsg").textContent=msg;
  $("#breakdown").innerHTML=`<span>🥯 ${got.plain}</span><span>🧀 ${got.cheese}</span><span>🍫 ${got.choco}</span><span>🫐 ${got.blueberry}</span><span>✨ ${got.rare}</span>`;
  screen("result");
+ const retry=$("#retryBtn");
+ retry.disabled=true;
+ retry.textContent="余韻処理中…";
+ setTimeout(()=>{retry.disabled=false;retry.textContent="もう一回争う";},1200);
 }
 $("#startBtn").addEventListener("click",start);
-$("#retryBtn").addEventListener("click",start);
+$("#retryBtn").addEventListener("click",e=>{if(e.currentTarget.disabled)return;start();});
 })();
 </script>
 </body>
